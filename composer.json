@@ -1,0 +1,33 @@
+{
+    "name": "callismart/dto",
+    "description": "A flexible, extendable foundation for Data Transfer Objects (DTOs) in PHP.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Callistus Nwachukwu",
+            "email": "admin@callismart.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Callismart\\DTO\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Callismart\\DTO\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "scripts": {
+        "test": "phpunit --colors=always"
+    }
+}
