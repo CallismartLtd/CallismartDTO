@@ -287,10 +287,20 @@ class DTO implements \IteratorAggregate, \Countable, \ArrayAccess, \JsonSerializ
     /**
      * Return all properties as a plain associative array.
      *
+     * Sensitive values (defined in sensitive_keys()) are masked as '***'.
+     *
      * @return array<string, mixed>
      */
     public function to_array(): array {
-        return $this->props;
+        $data = $this->props;
+
+        foreach ( $this->sensitive_keys() as $key ) {
+            if ( array_key_exists( $key, $data ) && ! empty( $data[ $key ] ) ) {
+                $data[ $key ] = '***';
+            }
+        }
+
+        return $data;
     }
 
     /**
@@ -419,7 +429,7 @@ class DTO implements \IteratorAggregate, \Countable, \ArrayAccess, \JsonSerializ
     }
 
     public function jsonSerialize(): mixed {
-        return $this->props;
+        return $this->to_array();  // Uses masked version
     }
 
     /*
@@ -429,6 +439,21 @@ class DTO implements \IteratorAggregate, \Countable, \ArrayAccess, \JsonSerializ
     */
 
     /**
+     * Debug handler for var_dump().
+     *
+     * Prevents credential leakage by masking sensitive values.
+     *
+     * @return array<string, mixed>
+     */
+    public function __debugInfo(): array {
+        return [
+            'class' => static::class,
+            'count' => $this->count(),
+            'props' => $this->to_array(),  // Uses masked version
+        ];
+    }
+
+    /**
      * Dump the current DTO state for inspection.
      *
      * Sensitive values will be masked if the DTO defines them.
@@ -436,21 +461,11 @@ class DTO implements \IteratorAggregate, \Countable, \ArrayAccess, \JsonSerializ
      * @return array<string, mixed>
      */
     public function dump(): array {
-
-        $data       = $this->props;
-        $sensitive  = $this->sensitive_keys();
-
-        foreach ( $sensitive as $key ) {
-            if ( array_key_exists( $key, $data ) ) {
-                $data[ $key ] = '***';
-            }
-        }
-
         return [
             'class'        => static::class,
             'count'        => $this->count(),
             'allowed_keys' => $this->allowed_keys(),
-            'props'        => $data,
+            'props'        => $this->to_array(),  // Uses masked version
         ];
     }
 }
