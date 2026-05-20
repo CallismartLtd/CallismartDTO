@@ -28,6 +28,14 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "scripts": {
-        "test": "phpunit --colors=always"
+        "test": "phpunit --colors=always --testdox"
+    },
+    "archive": {
+        "exclude": [
+            "/tests",
+            "/phpunit.xml",
+            "/phpunit.xml.dist",
+            "/.github"
+        ]
     }
 }
