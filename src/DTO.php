@@ -227,7 +227,7 @@ class DTO implements \IteratorAggregate, \Countable, \ArrayAccess, \JsonSerializ
     public function fill( array $data ): static {
         $this->props = [];
         foreach ( $data as $key => $value ) {
-            $this->assign( $key, $value );
+            $this->set( $key, $value );
         }
         return $this;
     }
@@ -241,7 +241,7 @@ class DTO implements \IteratorAggregate, \Countable, \ArrayAccess, \JsonSerializ
      */
     public function merge( array $data ): static {
         foreach ( $data as $key => $value ) {
-            $this->assign( $key, $value );
+            $this->set( $key, $value );
         }
         return $this;
     }
@@ -363,7 +363,7 @@ class DTO implements \IteratorAggregate, \Countable, \ArrayAccess, \JsonSerializ
 
     /** @param string $name @param mixed $value */
     public function __set( string $name, mixed $value ): void {
-        $this->assign( $name, $value );
+        $this->set( $name, $value );
     }
 
     /** @param string $name */
@@ -401,7 +401,7 @@ class DTO implements \IteratorAggregate, \Countable, \ArrayAccess, \JsonSerializ
         if ( ! is_string( $offset ) ) {
             throw new InvalidArgumentException( 'DTO keys must be strings.' );
         }
-        $this->assign( $offset, $value );
+        $this->set( $offset, $value );
     }
 
     /** @param mixed $offset */
