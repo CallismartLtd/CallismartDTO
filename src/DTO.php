@@ -16,6 +16,7 @@ use InvalidArgumentException;
  *
  * Subclasses can override:
  * - allowed_keys()    to restrict which properties may be set
+ * - required_keys()   to declare which properties must be present for validity
  * - sensitive_keys()  to hide sensitive values in debugging/serialization
  * - cast()            to apply type coercion on assignment
  *
@@ -33,6 +34,9 @@ use InvalidArgumentException;
  *       protected function allowed_keys(): array {
  *           return ['name', 'email', 'role'];
  *       }
+ *       protected function required_keys(): array {
+ *           return ['name', 'email'];
+ *       }
  *       protected function sensitive_keys(): array {
  *           return ['email'];
  *       }
@@ -43,6 +47,11 @@ use InvalidArgumentException;
  *           };
  *       }
  *   }
+ *
+ *   $dto = new UserDTO(['name' => 'Alice']);
+ *   $dto->is_valid();     // false
+ *   $dto->missing_keys(); // ['email']
+ *   $dto->validate();     // throws InvalidArgumentException
  *
  * @package Callismart\Data
  * @since   0.1.0
@@ -90,6 +99,22 @@ class DTO implements \IteratorAggregate, \Countable, \ArrayAccess, \JsonSerializ
      * @return string[]
      */
     protected function allowed_keys(): array {
+        return [];
+    }
+
+    /**
+     * Return the list of keys required to be present before the DTO
+     * is considered valid.
+     *
+     * Checked by missing_keys()/is_valid()/validate() — not enforced
+     * automatically on assign, so the DTO can still be built up
+     * incrementally via fill()/merge()/magic setters without throwing
+     * mid-construction. Return an empty array (default) to require
+     * nothing.
+     *
+     * @return string[]
+     */
+    protected function required_keys(): array {
         return [];
     }
 
@@ -285,6 +310,59 @@ class DTO implements \IteratorAggregate, \Countable, \ArrayAccess, \JsonSerializ
     }
 
     /**
+     * Return which required keys (per required_keys()) are not yet set.
+     *
+     * Uses has() (array_key_exists) under the hood, so a key explicitly
+     * set to null still counts as present — consistent with has()
+     * elsewhere in this class.
+     *
+     * @return string[]
+     */
+    public function missing_keys(): array {
+        return array_values(
+            array_filter(
+                $this->required_keys(),
+                fn( string $key ): bool => ! $this->has( $key )
+            )
+        );
+    }
+
+    /**
+     * Check whether all required keys (per required_keys()) are present.
+     *
+     * @return bool
+     */
+    public function is_valid(): bool {
+        return empty( $this->missing_keys() );
+    }
+
+    /**
+     * Assert that all required keys (per required_keys()) are present.
+     *
+     * Not called automatically — the DTO supports incremental building
+     * via fill()/merge()/magic setters, so validation is opt-in. Call
+     * this explicitly once construction is complete.
+     *
+     * @return static Fluent.
+     * @throws InvalidArgumentException If any required key is missing.
+     */
+    public function validate(): static {
+        $missing = $this->missing_keys();
+
+        if ( ! empty( $missing ) ) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Missing required key(s) for %s: %s.',
+                    static::class,
+                    implode( ', ', $missing )
+                )
+            );
+        }
+
+        return $this;
+    }
+
+    /**
      * Return all properties as a plain associative array.
      *
      * Sensitive values (defined in sensitive_keys()) are masked as '***'.
@@ -462,10 +540,12 @@ class DTO implements \IteratorAggregate, \Countable, \ArrayAccess, \JsonSerializ
      */
     public function dump(): array {
         return [
-            'class'        => static::class,
-            'count'        => $this->count(),
-            'allowed_keys' => $this->allowed_keys(),
-            'props'        => $this->to_array(),  // Uses masked version
+            'class'         => static::class,
+            'count'         => $this->count(),
+            'allowed_keys'  => $this->allowed_keys(),
+            'required_keys' => $this->required_keys(),
+            'missing_keys'  => $this->missing_keys(),
+            'props'         => $this->to_array(),  // Uses masked version
         ];
     }
 }

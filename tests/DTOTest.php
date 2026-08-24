@@ -17,9 +17,9 @@ use InvalidArgumentException;
 class DTOTest extends TestCase {
 
     /*
-    |----------
+    |---------------------
     | BASIC OPERATIONS
-    |----------
+    |---------------------
     */
 
     /**
@@ -93,9 +93,9 @@ class DTOTest extends TestCase {
     }
 
     /*
-    |----------
+    |------------------------
     | MAGIC PROPERTY ACCESS
-    |----------
+    |------------------------
     */
 
     /**
@@ -133,9 +133,9 @@ class DTOTest extends TestCase {
     }
 
     /*
-    |----------
+    |-------------------------------
     | ARRAY ACCESS (ArrayAccess)
-    |----------
+    |-------------------------------
     */
 
     /**
@@ -171,9 +171,9 @@ class DTOTest extends TestCase {
     }
 
     /*
-    |----------
+    |---------------------------------
     | FLUENT API / METHOD CHAINING
-    |----------
+    |---------------------------------
     */
 
     /**
